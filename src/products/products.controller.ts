@@ -1,88 +1,35 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Put ,Req, Res, ValidationPipe} from '@nestjs/common';
-import express from 'express';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
 import { CreateProductDto } from './dtos/create-product.dto';
 import { UpdateProductDto } from './dtos/update-product.dto';
-type ProductType = { id: number, name: string, price: number }
+import { ProductsService } from './products.service';
 @Controller('api/')
 export class ProductsController {
-    private products: ProductType[] = [
-        {
-            id: 1,
-            name: 'Laptop',
-            price: 1200.5,
-        },
-        {
-            id: 2,
-            name: 'Smartphone',
-            price: 750.0,
-        },
-        {
-            id: 3,
-            name: 'Headphones',
-            price: 99.99,
-        },
-        {
-            id: 4,
-            name: 'Smartwatch',
-            price: 199.99,
-        },
-        {
-            id: 5,
-            name: 'Tablet',
-            price: 450.0,
-        },
-    ];
-    @Post("product-with-express")
-    public createProductWithExpress(@Req() req: express.Request, @Res() res:express.Response) {
-        const newItem = {
-            id: this.products.length + 1,
-            name: req.body.name,
-            price: req.body.price
-        }
-        this.products.push(newItem);
-        res.status(201).json(newItem);
-    }
+    constructor(private service: ProductsService) {}
     @Post("product")
     public createProduct(@Body() body: CreateProductDto) {
-        const newItem = {
-            id: this.products.length + 1,
-            name: body.name,
-            price: body.price
-        }
-        this.products.push(newItem)
-        return newItem
+        this.service.create(body)
     }
 
     @Get("products")
     public getAllProducts() {
-        return this.products
+        this.service.getAll()
     }
 
-    @Get("products/:id", )
-    public getProductById(@Param("id",ParseIntPipe) id: number){
-        return this.getProductObjectById(id)
+    @Get("products/:id",)
+    public getProductById(@Param("id", ParseIntPipe) id: number) {
+        this.service.getProduct(id)
     }
     @Put("products/:id")
     public UpdateProductById(
-        @Param("id",ParseIntPipe) id: number){
-        let selectProduct = this.getProductObjectById(id);
-        return {message:'product updated successfully with id: '+id}
+        @Body() body: UpdateProductDto,
+        @Param("id", ParseIntPipe) id: number) {
+        this.service.update(id,body)
     }
     @Delete("products/:id")
     public DeleteProductById(
-        
-        @Param("id",ParseIntPipe) id: number){
-        this.getProductObjectById(id);
-        return {message:'product is Delete successfully with id: '+id}
+        @Param("id", ParseIntPipe) id: number) {
+        this.service.delete(id)
     }
 
-    getProductObjectById(id:number, body?:any):ProductType{
-        let product = this.products.find(product => product.id == id);
-        if(!product) throw new NotFoundException("Product not found");
-        if(body) {
-        product.name = body.name;
-        product.price = body.price;
-        };
-        return product
-    }
+
 }
