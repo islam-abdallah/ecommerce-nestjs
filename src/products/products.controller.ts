@@ -1,6 +1,7 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Put ,Req, Res} from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Put ,Req, Res, ValidationPipe} from '@nestjs/common';
 import express from 'express';
 import { CreateProductDto } from './dtos/create-product.dto';
+import { UpdateProductDto } from './dtos/update-product.dto';
 type ProductType = { id: number, name: string, price: number }
 @Controller('api/')
 export class ProductsController {
@@ -62,19 +63,26 @@ export class ProductsController {
         return this.getProductObjectById(id)
     }
     @Put("products/:id")
-    public UpdateProductById(@Param("id",ParseIntPipe) id: number){
+    public UpdateProductById(
+        @Param("id",ParseIntPipe) id: number){
         let selectProduct = this.getProductObjectById(id);
         return {message:'product updated successfully with id: '+id}
     }
     @Delete("products/:id")
-    public DeleteProductById(@Param("id",ParseIntPipe) id: number){
+    public DeleteProductById(
+        
+        @Param("id",ParseIntPipe) id: number){
         this.getProductObjectById(id);
         return {message:'product is Delete successfully with id: '+id}
     }
 
-    getProductObjectById(id:number):ProductType{
+    getProductObjectById(id:number, body?:any):ProductType{
         let product = this.products.find(product => product.id == id);
         if(!product) throw new NotFoundException("Product not found");
+        if(body) {
+        product.name = body.name;
+        product.price = body.price;
+        };
         return product
     }
 }
