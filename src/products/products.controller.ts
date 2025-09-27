@@ -4,31 +4,31 @@ import { UpdateProductDto } from './dtos/update-product.dto';
 import { ProductsService } from './products.service';
 @Controller('api/')
 export class ProductsController {
-    constructor(private service: ProductsService) {}
+    constructor(private service: ProductsService) { }
     @Post("product")
     public createProduct(@Body() body: CreateProductDto) {
-        this.service.create(body)
+        return this.service.create(body)
     }
 
     @Get("products")
     public getAllProducts() {
-        this.service.getAll()
+        return this.service.getAll()
     }
 
     @Get("products/:id",)
     public getProductById(@Param("id", ParseIntPipe) id: number) {
-        this.service.getProduct(id)
+        return this.service.getProduct(id)
     }
     @Put("products/:id")
     public UpdateProductById(
         @Body() body: UpdateProductDto,
         @Param("id", ParseIntPipe) id: number) {
-        this.service.update(id,body)
+        return this.service.update(id, body)
     }
     @Delete("products/:id")
     public DeleteProductById(
         @Param("id", ParseIntPipe) id: number) {
-        this.service.delete(id)
+        return this.service.delete(id)
     }
 
 
