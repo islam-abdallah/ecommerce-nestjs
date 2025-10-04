@@ -1,10 +1,9 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
-import { CreateProductDto } from './dtos/create-product.dto';
-import { UpdateProductDto } from './dtos/update-product.dto';
+import { CreateProductDto, UpdateProductDto } from './dtos';
 import { ProductsService } from './products.service';
 @Controller('api/')
 export class ProductsController {
-    constructor(private service: ProductsService) { }
+    constructor(private readonly service: ProductsService) { }
     @Post("product")
     public createProduct(@Body() body: CreateProductDto) {
         return this.service.create(body)

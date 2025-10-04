@@ -1,44 +1,46 @@
-import { Injectable } from '@nestjs/common';
-type ReviewsType = { id: number, name: string, comment: string, rate: number }
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Review } from './review.entity';
+import { CreateReviewDto, UpdateReviewDto } from './dtos';
 
 @Injectable()
 export class ReviewsService {
-    private data: ReviewsType[] = [
-        {
-            id: 1,
-            name: 'Islam Abdallah',
-            comment: 'Great product, very high quality!',
-            rate: 5,
-        },
-        {
-            id: 2,
-            name: 'Sara Ali',
-            comment: 'Good value for the price, but delivery was a bit late.',
-            rate: 4,
-        },
-        {
-            id: 3,
-            name: 'Omar Khaled',
-            comment: 'Average experience, item didn’t match description fully.',
-            rate: 3,
-        },
-        {
-            id: 4,
-            name: 'Mona Hassan',
-            comment: 'Not satisfied, product stopped working after a week.',
-            rate: 2,
-        },
-        {
-            id: 5,
-            name: 'Ahmed Mostafa',
-            comment: 'Terrible quality, waste of money.',
-            rate: 1,
-        },
-    ];
+    constructor(
+        @InjectRepository(Review)
+        private readonly reviewsRepository: Repository<Review>,
+    ) {}
 
-
-    public getAll() {
-        return this.data
+    public create(dto: CreateReviewDto) {
+        const newItem = this.reviewsRepository.create(dto);
+        return this.reviewsRepository.save(newItem);
     }
 
+    public getAll() {
+        return this.reviewsRepository.find();
+    }
+
+    public async getReview(id: number) {
+        const review = await this.reviewsRepository.findOne({ where: { id } });
+        if (!review) throw new NotFoundException('Review not found');
+        return review;
+    }
+
+    public async update(id: number, dto: UpdateReviewDto) {
+        const review = await this.getReview(id);
+        if (review) {
+            review.name = dto.name ?? review.name;
+            review.comment = dto.comment ?? review.comment;
+            review.rate = dto.rate ?? review.rate;
+            return this.reviewsRepository.save(review);
+        }
+    }
+
+    public async delete(id: number) {
+        const review = await this.getReview(id);
+        if (review) {
+            await this.reviewsRepository.remove(review);
+            return { message: 'review deleted successfully' };
+        }
+    }
 }
