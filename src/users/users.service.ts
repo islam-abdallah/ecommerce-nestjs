@@ -29,7 +29,7 @@ export class UsersService {
     public async update(id: number, dto: UpdateUserDto) {
         const user = await this.getUser(id);
         if (user) {
-            user.name = dto.name ?? user.name;
+            user.username = dto.username ?? user.username;
             user.email = dto.email ?? user.email;
             return this.usersRepository.save(user);
         }

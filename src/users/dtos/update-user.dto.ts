@@ -1,16 +1,30 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, Length } from "class-validator";
+import { IsEmail, IsString, Length, IsOptional, IsBoolean, IsEnum } from "class-validator";
+import { UserType } from "src/utils/enums";
 
 export class UpdateUserDto {
+    @IsOptional()
     @IsString()
-    @IsNotEmpty()
     @Length(2,150)
-    @IsOptional()
-    name?: string;
+    username?: string;
 
+    @IsOptional()
     @IsEmail()
-    @IsNotEmpty()
-    @IsOptional()
     email?: string;
+
+    @IsOptional()
+    @IsString()
+    @Length(6,150)
+    password?: string;
+
+    @IsOptional()
+    @IsEnum(UserType)
+    userType?: UserType;
+
+    @IsOptional()
+    @IsBoolean()
+    accountVerified?: boolean;
+
+    @IsOptional()
+    @IsBoolean()
+    accountActive?: boolean;
 }
-
-

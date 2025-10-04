@@ -15,6 +15,14 @@ export class CreateReviewDto {
     @Min(1)
     @Max(5)
     rate: number;
+
+    @IsInt()
+    @IsNotEmpty()
+    productId: number;
+
+    @IsInt()
+    @IsNotEmpty()
+    userId: number;
 }
 
 
