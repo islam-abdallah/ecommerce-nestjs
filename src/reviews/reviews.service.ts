@@ -1,44 +1,76 @@
-import { Injectable } from '@nestjs/common';
-type ReviewsType = { id: number, name: string, comment: string, rate: number }
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Review } from './review.entity';
+import { CreateReviewDto, UpdateReviewDto } from './dtos';
+import { Product } from 'src/products/product.entity';
+import { User } from 'src/users/user.entity';
 
 @Injectable()
 export class ReviewsService {
-    private data: ReviewsType[] = [
-        {
-            id: 1,
-            name: 'Islam Abdallah',
-            comment: 'Great product, very high quality!',
-            rate: 5,
-        },
-        {
-            id: 2,
-            name: 'Sara Ali',
-            comment: 'Good value for the price, but delivery was a bit late.',
-            rate: 4,
-        },
-        {
-            id: 3,
-            name: 'Omar Khaled',
-            comment: 'Average experience, item didn’t match description fully.',
-            rate: 3,
-        },
-        {
-            id: 4,
-            name: 'Mona Hassan',
-            comment: 'Not satisfied, product stopped working after a week.',
-            rate: 2,
-        },
-        {
-            id: 5,
-            name: 'Ahmed Mostafa',
-            comment: 'Terrible quality, waste of money.',
-            rate: 1,
-        },
-    ];
+    constructor(
+        @InjectRepository(Review)
+        private readonly reviewsRepository: Repository<Review>,
+        @InjectRepository(Product)
+        private readonly productsRepository: Repository<Product>,
+        @InjectRepository(User)
+        private readonly usersRepository: Repository<User>,
+    ) {}
 
+    public async create(dto: CreateReviewDto) {
+        // Find the product and user by their IDs
+        const product = await this.productsRepository.findOne({ where: { id: dto.productId } });
+        if (!product) {
+            throw new NotFoundException('Product not found');
+        }
 
-    public getAll() {
-        return this.data
+        const user = await this.usersRepository.findOne({ where: { id: dto.userId } });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        // Create the review with relationships
+        const newReview = this.reviewsRepository.create({
+            name: dto.name,
+            comment: dto.comment,
+            rate: dto.rate,
+            product: product,
+            user: user,
+        });
+
+        return this.reviewsRepository.save(newReview);
     }
 
+    public getAll() {
+        return this.reviewsRepository.find({
+            relations: ['product', 'user']
+        });
+    }
+
+    public async getReview(id: number) {
+        const review = await this.reviewsRepository.findOne({ 
+            where: { id },
+            relations: ['product', 'user']
+        });
+        if (!review) throw new NotFoundException('Review not found');
+        return review;
+    }
+
+    public async update(id: number, dto: UpdateReviewDto) {
+        const review = await this.getReview(id);
+        if (review) {
+            review.name = dto.name ?? review.name;
+            review.comment = dto.comment ?? review.comment;
+            review.rate = dto.rate ?? review.rate;
+            return this.reviewsRepository.save(review);
+        }
+    }
+
+    public async delete(id: number) {
+        const review = await this.getReview(id);
+        if (review) {
+            await this.reviewsRepository.remove(review);
+            return { message: 'review deleted successfully' };
+        }
+    }
 }

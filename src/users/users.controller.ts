@@ -1,35 +1,54 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, Headers, UseGuards } from '@nestjs/common';
+import { UsersService } from './users.service';
+import { CreateUserDto, LoginDto, RegisterDto, UpdateUserDto } from './dtos';
+import { AuthGuard } from './Guard/auth.guard';
 
-@Controller('api/users')
+@Controller('api/')
 export class UsersController {
-    @Get("")
+    constructor(private readonly service: UsersService) {}
+
+    @Post('user')
+    public createUser(@Body() body: CreateUserDto) {
+        return this.service.create(body);
+    }
+
+    @Get('users')
     public getAllUsers() {
-        return [
-            {
-                id: 1,
-                name: 'Islam Abdallah',
-                email: 'islam@example.com',
-            },
-            {
-                id: 2,
-                name: 'Sara Ali',
-                email: 'sara@example.com',
-            },
-            {
-                id: 3,
-                name: 'Omar Khaled',
-                email: 'omar@example.com',
-            },
-            {
-                id: 4,
-                name: 'Mona Hassan',
-                email: 'mona@example.com',
-            },
-            {
-                id: 5,
-                name: 'Ahmed Mostafa',
-                email: 'ahmed@example.com',
-            },
-        ];
+        return this.service.getAll();
+    }
+
+    @Get('users/:id')
+    public getUserById(@Param('id', ParseIntPipe) id: number) {
+        return this.service.getUser(id);
+    }
+
+    @Put('users/:id')
+    public updateUserById(
+        @Body() body: UpdateUserDto,
+        @Param('id', ParseIntPipe) id: number,
+    ) {
+        return this.service.update(id, body);
+    }
+
+    @Delete('users/:id')
+    public deleteUserById(@Param('id', ParseIntPipe) id: number) {
+        return this.service.delete(id);
+    }
+
+    @Post('users/auth/register')
+    public registerUser(@Body() body: RegisterDto) {
+        return this.service.register(body);
+    }
+
+    @Post('users/auth/login')
+    @HttpCode(HttpStatus.OK)
+    public login(@Body()body :LoginDto){
+        return this.service.login(body)
+    }
+
+    @Get('current-user')
+    @UseGuards(AuthGuard)
+    public getCurrentUser(@Headers() headers:any){
+        return this.service.getCurrentUser(headers.authorization)
     }
 }
