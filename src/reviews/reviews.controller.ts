@@ -1,19 +1,41 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
-import { ReviewsService } from './reviews.service';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { AuthRolesGuard } from 'src/users/Guard/auth-roles.guard';
+import { CurrentUser } from 'src/users/decorators/current-user.decorator';
+import { Roles } from 'src/users/decorators/roles-user.decorator';
+import { UserType } from 'src/utils/enums';
+import type { JWTPayloadType } from 'src/utils/typesPayload';
 import { CreateReviewDto, UpdateReviewDto } from './dtos';
+import { ReviewsService } from './reviews.service';
 
 @Controller('api/')
 export class ReviewsController {
     constructor(private readonly service: ReviewsService) { }
 
-    @Post('review')
-    public createReview(@Body() body: CreateReviewDto) {
-        return this.service.create(body);
+    @Post('reviews/:productId')
+    @Roles(UserType.ADMIN, UserType.Normal_USER)
+    @UseGuards(AuthRolesGuard)
+
+    public createReview(@Body() body: CreateReviewDto,
+    @Param('productId', ParseIntPipe) productId:number,
+    @CurrentUser() user :JWTPayloadType
+) {
+        return this.service.create(
+            productId,
+            user.id,
+            body
+        );
     }
 
     @Get('reviews')
-    public getAllReviews() {
-        return this.service.getAll();
+    public getAllReviews(
+        @Query('pageNumber', ParseIntPipe) pageNumber :number,
+        @Query('perPage', ParseIntPipe) perPage :number 
+    ) {
+        console.log('pageNumber', pageNumber)
+        console.log('perPage', perPage)
+        return this.service.getAll(
+            pageNumber,perPage
+        );
     }
 
     @Get('reviews/:id')

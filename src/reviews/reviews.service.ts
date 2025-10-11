@@ -17,33 +17,45 @@ export class ReviewsService {
         private readonly usersRepository: Repository<User>,
     ) {}
 
-    public async create(dto: CreateReviewDto) {
+    public async create(productId:any, userId:any, dto: CreateReviewDto) {
         // Find the product and user by their IDs
-        const product = await this.productsRepository.findOne({ where: { id: dto.productId } });
+        const product = await this.productsRepository.findOne({ where: { id: productId } });
         if (!product) {
             throw new NotFoundException('Product not found');
         }
 
-        const user = await this.usersRepository.findOne({ where: { id: dto.userId } });
+        const user = await this.usersRepository.findOne({ where: { id: userId } });
         if (!user) {
             throw new NotFoundException('User not found');
         }
 
         // Create the review with relationships
         const newReview = this.reviewsRepository.create({
-            name: dto.name,
-            comment: dto.comment,
-            rate: dto.rate,
-            product: product,
-            user: user,
+            ...dto,
+            user,
+            product,
         });
-
-        return this.reviewsRepository.save(newReview);
+        const result = await this.reviewsRepository.save(newReview);
+        return {
+            id:result.id,
+            comment:result.comment,
+            rate:result.rate,
+            createdAt:result.createdAt,
+            productId:product.id,
+            userId:user.id,
+        }
     }
 
-    public getAll() {
+    public getAll(
+        pageNumber:number = 0,perPage:number = 3
+    ) {
+        console.log('getAll -- pageNumber', pageNumber)
+        console.log('getAll -- perPage', perPage)
         return this.reviewsRepository.find({
-            relations: ['product', 'user']
+            relations: ['product', 'user'],
+            order:{createdAt:"DESC"},
+            skip:perPage * (pageNumber - 1),
+            take:perPage,
         });
     }
 
@@ -59,11 +71,11 @@ export class ReviewsService {
     public async update(id: number, dto: UpdateReviewDto) {
         const review = await this.getReview(id);
         if (review) {
-            review.name = dto.name ?? review.name;
             review.comment = dto.comment ?? review.comment;
             review.rate = dto.rate ?? review.rate;
             return this.reviewsRepository.save(review);
         }
+        throw new NotFoundException('review not found') 
     }
 
     public async delete(id: number) {
