@@ -2,27 +2,27 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { User } from './user.entity';
-import { CreateUserDto, UpdateUserDto } from './dtos';
+import { User } from '../../user.entity';
+import { CreateUserDto, UpdateUserDto } from '../../dtos';
 
 describe('UsersService', () => {
   let service: UsersService;
 
   const mockUser: User = {
     id: 1,
-    name: 'John Doe',
+    username: 'John Doe',
     email: 'john.doe@example.com',
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
   };
 
   const mockCreateUserDto: CreateUserDto = {
-    name: 'John Doe',
+    username: 'John Doe',
     email: 'john.doe@example.com',
   };
 
   const mockUpdateUserDto: UpdateUserDto = {
-    name: 'Jane Doe',
+    username: 'Jane Doe',
     email: 'jane.doe@example.com',
   };
 

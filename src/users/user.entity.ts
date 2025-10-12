@@ -4,6 +4,7 @@ import { UserType } from "src/utils/enums";
 
 import { Product } from "src/products/product.entity";
 import { Review } from "src/reviews/review.entity";
+import { Exclude } from "class-transformer";
 @Entity({'name':'users'})
 export class User {
 
@@ -18,6 +19,7 @@ export class User {
     userType: string;
 
     @Column({ type: 'varchar', length: 150 })
+    @Exclude()
     password: string;
 
     @Column({ type: 'boolean', default: false })

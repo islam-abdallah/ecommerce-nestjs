@@ -1,12 +1,13 @@
-import { Module } from '@nestjs/common';
+import { ClassSerializerInterceptor, Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
 import { ReviewsModule } from './reviews/reviews.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Product } from './products/product.entity';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { UsersModule } from './users/users.module';
+import { UploadsModule } from './uploads/uploads.module';
 @Module({
   imports: [
     UsersModule,
@@ -27,6 +28,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     //   synchronize: true,
     //   entities: [Product],
     // }),
+    UploadsModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -47,8 +49,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     }
 
     ),
+    UploadsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,
+    {
+      provide:APP_INTERCEPTOR,
+      useClass:ClassSerializerInterceptor
+    },
+  ],
 })
 export class AppModule {}

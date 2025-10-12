@@ -1,11 +1,6 @@
 import { IsInt, IsNotEmpty, IsOptional, IsString, Length, Max, Min } from "class-validator";
 
 export class UpdateReviewDto {
-    @IsString()
-    @IsNotEmpty()
-    @Length(2,150)
-    @IsOptional()
-    name?: string;
 
     @IsString()
     @IsNotEmpty()
